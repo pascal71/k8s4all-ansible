@@ -1,0 +1,23 @@
+- name: Add key for CRI-O repo
+  become: yes
+  apt_key:
+    url: https://download.opensuse.org/repositories/home:/kubeinit/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/Release.key
+    state: present
+
+- name: Add CRI-O repo
+  become: yes
+  apt_repository:
+    repo: 'deb https://download.opensuse.org/repositories/home:/kubeinit/x{{ ansible_distribution }}_{{ ansible_distribution_version }}/ /'
+    state: present
+    filename: kubeinit.list
+
+- name: Install CRI-O packages
+  become: yes
+  apt:
+    name: "{{ CRIO_PACKAGE_LIST }}"
+    state: latest
+    update_cache: true
+
+- name: Set CRIO service name to cri-o
+  set_fact:
+    crio_svc: cri-o

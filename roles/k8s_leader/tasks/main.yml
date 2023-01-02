@@ -1,0 +1,25 @@
+- name: Configure kubeadm-init.conf
+  template:
+    src: kubeadm-init.conf.j2
+    dest: kubeadm-init.conf
+
+- name: Initialialize leader
+  become: yes
+  shell: kubeadm init --config=kubeadm-init.conf --upload-certs | tee kubeadm-init.out
+
+- name: Make .kube directory
+  become: yes
+  file:
+    path: .kube
+    owner: "{{ lookup('env','USER') }}"
+    state: directory
+    mode: 0700
+
+- name: Copy config from /etc/kubernetes/admin.conf
+  become: yes
+  copy:
+    remote_src: yes
+    src: /etc/kubernetes/admin.conf
+    dest: .kube/config
+    owner: "{{ lookup('env','USER') }}"
+    mode: 0700

@@ -1,0 +1,28 @@
+- name: Add CRI-O repo 1/2
+  become: yes
+  get_url:
+    url: https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable/CentOS_8/devel:kubic:libcontainers:stable.repo
+    dest: /etc/yum.repos.d/devel:kubic:libcontainers:stable.repo
+    mode: '0440'
+
+- name: Add CRI-O repo 2/2
+  become: yes
+  get_url:
+    url: https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ cre.version }}/CentOS_8/devel:kubic:libcontainers:stable:cri-o:{{ cre.version }}.repo
+    dest: /etc/yum.repos.d/devel:kubic:libcontainers:stable:cri-o:{{ cre.version }}.repo
+
+- name: Clean up packages
+  become: yes
+  dnf:
+    name: "{{ CRIO_CLEANUP_LIST }}"
+    state: absent
+
+- name: Install CRI-O packages
+  become: yes
+  dnf:
+    name: "{{ CRIO_PACKAGE_LIST }}"
+    state: latest
+
+- name: Set CRIO service name to crio
+  set_fact:
+    crio_svc: "crio"

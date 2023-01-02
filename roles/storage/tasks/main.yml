@@ -1,0 +1,53 @@
+#- name: Destroy old PVs
+#  become: yes
+#  shell: dd if=/dev/zero of=/dev/vdb bs=1024k count=10
+
+- name: Create VG /dev/{{ k8s.vg_name_containers }} using {{ k8s.pvs }}
+  become: yes
+  lvg:
+    vg: "{{ k8s.vg_name_containers }}"
+    pvs: "{{ k8s.pvs }}"
+    state: present
+
+- name: Create LV /dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_containers}}
+  become: yes
+  lvol:
+    vg: "{{ k8s.vg_name_containers }}"
+    lv: "{{ k8s.lv_name_containers }}"
+    size: "{{ k8s.lv_size_containers }}"
+
+- name: Create LV /dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_kubelet}}
+  become: yes
+  lvol:
+    vg: "{{ k8s.vg_name_containers }}"
+    lv: "{{ k8s.lv_name_kubelet }}"
+    size: "{{ k8s.lv_size_kubelet }}"
+
+- name: Create FS on /dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_containers }}
+  become: yes
+  filesystem:
+    dev: "/dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_containers }}"
+    fstype: xfs
+
+- name: Create FS on /dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_kubelet }} 
+  become: yes
+  filesystem:
+    dev: "/dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_kubelet }}"
+    fstype: xfs
+
+    
+- name: Mount FS /dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_containers }} on {{ k8s.lv_mount_containers }}
+  become: yes
+  mount:
+    src: "/dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_containers }}"
+    fstype: xfs
+    path: "{{ k8s.lv_mount_containers }}"
+    state: mounted
+
+- name: Mount FS /dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_kubelet }} on {{ k8s.lv_mount_kubelet }}
+  become: yes
+  mount:
+    src: "/dev/{{ k8s.vg_name_containers }}/{{ k8s.lv_name_kubelet }}"
+    path: "{{ k8s.lv_mount_kubelet }}"
+    fstype: xfs
+    state: mounted

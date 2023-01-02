@@ -1,0 +1,22 @@
+- name: Load br_netfilter module
+  become: yes
+  shell: modprobe br_netfilter
+
+- name: Make sure br_netfilter module is loaded on boot
+  become: yes
+  template:
+    src: k8s.conf.j2
+    dest: /etc/modules-load.d/k8s.conf
+
+- name: Configure sysctl.conf for CRIs
+  become: yes
+  template:
+    src: 99-custom.conf.j2
+    dest: /etc/sysctl.d/99-custom.conf
+
+- name: Activate sysctl
+  become: yes
+  shell: sysctl --system
+
+- name: Install Container Runtime Engine
+  include_tasks: "install-{{ cre.name }}.yml"

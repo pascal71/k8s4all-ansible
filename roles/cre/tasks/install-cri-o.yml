@@ -1,0 +1,45 @@
+- name: Install CRI-O packages
+  include_tasks: "install-cri-o-pkgs-{{ ansible_facts['os_family'] }}.yml"
+
+- name: Clean-up /etc/cni/net.d
+  become: yes
+  file:
+    path: /etc/cni/net.d/
+    state: absent
+
+- name: Retrieve registries.conf and save in /etc/containers
+  become: yes
+  get_url:
+    url: https://src.fedoraproject.org/rpms/containers-common/raw/main/f/registries.conf
+    dest: /etc/containers/registries.conf
+    mode: '0440'
+
+- name: Write out /etc/containers/containers.conf
+  become: yes
+  template:
+    src: containers.conf.j2
+    dest: /etc/containers/containers.conf
+
+- name: Enable and start cri-o
+  become: yes
+  systemd:
+    name: "{{ crio_svc }}"
+    state: started
+    enabled: true
+    daemon-reload: true
+
+- name: Correct systemd service file for cri-o if needed
+  become: yes
+  replace:
+    path: /etc/systemd/system/cri-o.service
+    regexp: '^ExecStart=/usr/local/bin/crio'
+    replace: 'ExecStart=/usr/bin/crio'
+
+- name: Restart cri-o
+  become: yes
+  systemd:
+    name: "{{ crio_svc }}"
+    state: restarted
+    enabled: true
+    daemon-reload: true
+

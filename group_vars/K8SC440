@@ -1,0 +1,41 @@
+##
+## VARs for ALL K8S NODES
+##
+##
+
+k8s:
+  version: "1.24.6"
+  pod_subnet: "192.168.0.0/16"
+  service_subnet: "10.96.0.0/16"
+  dns_domain: "cluster.local"
+  cluster_name: k8sc440
+  #control_plane_ep: "10.8.58.84:6443"
+  control_plane_ep: "{{groups['LEADER'][0]}}:6443"
+
+  vg_name_containers: vg_containers
+  pvs: /dev/vdb
+  lv_name_containers: lv_containers
+  lv_size_containers: 40G
+  lv_mount_containers: /var/lib/containers
+  lv_name_kubelet: lv_kubelet
+  lv_size_kubelet: 5G
+  lv_mount_kubelet: /var/lib/kubelet
+
+cre:
+  name: cri-o
+  version: "1.24"
+
+CRIO_PACKAGE_LIST:
+- cri-o
+- containers-common
+- cri-tools
+- podman
+- runc
+- uidmap
+- slirp4netns
+
+K8S_PACKAGE_LIST:
+- kubeadm={{ k8s.version }}-00
+- kubelet={{ k8s.version }}-00
+- kubectl={{ k8s.version }}-00
+
