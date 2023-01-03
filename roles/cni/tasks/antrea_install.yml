@@ -1,0 +1,2 @@
+- name: Install CANAL CNI
+  shell: kubectl apply -f https://github.com/antrea-io/antrea/releases/download/{{ k8s.cni_version }}/antrea.yml

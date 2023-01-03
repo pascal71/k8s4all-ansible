@@ -1,0 +1,12 @@
+- name: Add K8S repo
+  become: yes
+  template:
+    src: kubernetes.repo.j2
+    dest: /etc/yum.repos.d/kubernetes.repo
+    mode: 0640
+
+- name: Install K8S packages
+  become: yes
+  dnf:
+    name: "{{ item }}-{{ k8s.version }}"
+  loop: "{{ K8S_PACKAGE_LIST }}"

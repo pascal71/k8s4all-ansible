@@ -1,0 +1,17 @@
+{% if k8s.skip_kube_proxy %}
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+skipPhases:
+  - addon/kube-proxy
+{% endif %}
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+networking:
+  serviceSubnet: "{{ k8s.service_subnet }}"
+  podSubnet: "{{ k8s.pod_subnet }}"
+  dnsDomain: "{{ k8s.dns_domain }}"
+clusterName: "{{ k8s.cluster_name }}"
+kubernetesVersion: "{{ k8s.version }}"
+controlPlaneEndpoint: "{{ k8s.control_plane_ep }}"

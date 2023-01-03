@@ -1,0 +1,57 @@
+- name: Adding Cilium helm repo
+  shell: helm repo add cilium https://helm.cilium.io/
+
+- name: Installing Cilium Container Network Plugin
+  shell: helm upgrade --install cilium cilium/cilium --version {{ k8s.cni_version }} --namespace kube-system  --set ingressController.enabled=true   --set kubeProxyReplacement=strict   --set k8sServiceHost={{ ansible_hostname }}   --set k8sServicePort=6443 --set hubble.relay.enabled=true --set hubble.metrics.enabled="{dns,drop,tcp,flow,icmp,http}" --set hubble.ui.enabled=true --set hubble.relay.dialTimeout=5s --set hubble.relay.retryTimeout=5s --set monitor.enabled=true --set cluster.name="{{ k8s.cluster_name }}" --set hubble.peerService.clusterDomain="{{k8s.dns_domain}}" --set nodeinit.restartPods=true
+
+- name: Translate system architecture
+  set_fact:
+    ARCH: "arm64"
+  when: ansible_architecture == "aarch64"
+
+- name: Translate system architecture
+  set_fact:
+    ARCH: "amd64"
+  when: ansible_architecture == "x86_64"
+
+- name: Download Cilium CLI
+  get_url:
+    url: https://github.com/cilium/cilium-cli/releases/latest/download/cilium-linux-{{ ARCH }}.tar.gz
+    dest: /tmp
+
+- name: Unarchive Cilium CLI
+  unarchive:
+    src: /tmp/cilium-linux-{{ ARCH }}.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Copy Cilium CLI to /usr/local/bin
+  become: yes
+  copy:
+    src: /tmp/cilium
+    dest: /usr/local/bin
+    mode: 0755
+    remote_src: yes
+
+- name: Determine stable Hubble version
+  shell: curl -s https://raw.githubusercontent.com/cilium/hubble/master/stable.txt
+  register: hubver
+
+- name: Download Hubble CLI
+  get_url:
+    url: https://github.com/cilium/hubble/releases/download/{{ hubver.stdout }}/hubble-linux-{{ ARCH }}.tar.gz
+    dest: /tmp
+
+- name: Unarchive Hubble CLI
+  unarchive:
+    src: /tmp/hubble-linux-{{ ARCH }}.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Copy Hubble CLI to /usr/local/bin
+  become: yes
+  copy:
+    src: /tmp/hubble
+    dest: /usr/local/bin
+    mode: 0755
+    remote_src: yes

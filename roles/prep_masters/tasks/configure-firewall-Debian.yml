@@ -1,0 +1,19 @@
+- name: Check if UFW is enabled
+  shell: ufw status
+  changed_when: false
+  ignore_errors: true
+  register: ufw_check
+
+- name: Diag
+  debug:
+    msg: "{{ ufw_check }}"
+
+- name: Open up UFW ports for K8S masters
+  become: yes
+  ufw:
+    rule: allow
+    port: "{{ item.split('/')[0] | replace('-',':') }}"
+    proto: "{{ item.split('/')[1] | replace ('-',':') }}"
+    state: enabled
+  with_items: "{{ firewalld_open_port_list }}"
+  when: "'inactive' not in ufw_check.stdout"

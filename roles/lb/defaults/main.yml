@@ -1,0 +1,8 @@
+k8s_server_entries: []
+
+firewalld_lb_open_port_list:
+   - "22/tcp"
+   - "80/tcp"
+   - "443/tcp"
+   - "6443/tcp"
+   - "9999/tcp"

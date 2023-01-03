@@ -1,0 +1,2 @@
+- name: Install CANAL CNI
+  shell: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/{{ k8s.cni_version }}/manifests/canal.yaml

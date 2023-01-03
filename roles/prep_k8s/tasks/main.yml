@@ -1,0 +1,30 @@
+- name: Install kubernetes packages
+  include_tasks: "prep-k8s-{{ ansible_facts['os_family'] }}.yml"
+
+- name: Disable swap target
+  become: yes
+  systemd:
+    name: swap.target
+    state: stopped
+    masked: true
+    enabled: false
+
+- name: Remove swap from /etc/fstab
+  become: yes
+  lineinfile:
+    path: /etc/fstab
+    regexp: ^/swap.*
+    state: absent
+
+- name: Disable swap if needed
+  become: yes
+  shell: swapoff -a
+
+- name: Correct 
+  become: yes
+  shell: echo 'net.ipv4.conf.lxc*.rp_filter = 0' > /etc/sysctl.d/99-override_cilium_rp_filter.conf ; systemctl restart systemd-sysctl
+
+- name: Reset K8S
+  become: yes
+  shell: kubeadm reset --force
+

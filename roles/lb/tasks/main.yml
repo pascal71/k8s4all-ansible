@@ -1,0 +1,133 @@
+- name: Install dnspython
+  become: yes
+  package:
+    name: python3-dnspython
+    state: latest
+  when: ansible_host in groups['LB']
+
+- name: Install haproxy
+  become: yes
+  package:
+    name: haproxy
+    state: latest
+  when: ansible_host in groups['LB']
+
+- name: Configure selinux
+  become: yes
+  shell:  setsebool -P haproxy_connect_any 1
+  when: ansible_host in groups['LB'] and ansible_selinux is defined and ansible_selinux != False and ansible_selinux.status == 'enabled'
+
+- name: Install UFW
+  become: yes
+  package:
+    name: ufw
+    state: present
+  when: ansible_host in groups['LB']
+
+- name: Open firewall ports on LB
+  become: yes
+  ufw:
+    rule: allow
+    port: "{{ item.split('/')[0] | replace('-',':') }}"
+    proto: "{{ item.split('/')[1] | replace ('-',':') }}"
+    state: enabled
+  with_items: "{{ firewalld_lb_open_port_list }}"
+  when: ansible_host in groups['LB']
+
+- name: Get IP addr belonging to kubernetes control plane endpoint
+  shell: dig {{ k8s.control_plane_ep | split(':') | first  }} +search +short
+  register: kubemaster_ip
+
+- name: Diag
+  debug:
+    msg: "{{ kubemaster_ip }}"
+
+- name: Add Virtual IP Address for k8smaster
+  become: yes
+  lineinfile:
+    path: /etc/dhcpcd.exit-hook
+    create: yes
+    insertafter: eof
+    line: "ip address add {{ kubemaster_ip.stdout }}/21 dev {{ ansible_default_ipv4.interface }}"
+  when: ansible_host in groups['LB']
+
+- name: Add Virtual IP Address for k8smaster
+  become: yes
+  shell: "ip address add {{  kubemaster_ip.stdout }}/21 dev {{ ansible_default_ipv4.interface }}"
+  when: ansible_host in groups['LB']
+  ignore_errors: true
+
+- name: diag
+  debug:
+    msg: "{{ groups['LEADER'] }}"
+
+- name: diag
+  debug:
+    msg: "{{ groups['MASTERS'] }}"
+
+
+- name: Copy haproxy.cfg boilerplate
+  become: yes
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    force: no
+  when: ansible_host in groups['LB']
+
+- name: Configure K8S master frontend for haproxy
+  become: yes
+  blockinfile:
+    path: /etc/haproxy/haproxy.cfg
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ k8s.cluster_name }} frontend"
+    insertafter: "# K8S Master frontends"
+    block: |
+      frontend {{ k8s.cluster_name }}_master
+        bind {{ kubemaster_ip.stdout }}:6443
+        stats uri /proxystats
+        default_backend {{ k8s.cluster_name }}_servers
+  when: ansible_host in groups['LB']
+
+- name: Setup server backend leader entry
+  set_fact:
+    k8s_server_entries: "{{ k8s_server_entries + [ '  server ' + hostvars[item].ansible_hostname + ' ' + hostvars[item]['ansible_default_ipv4']['address'] + ':6443 check' ] }}"
+  with_items: "{{ groups['LEADER'] }}"
+
+- name: diag
+  debug:
+    msg: "{{ k8s_server_entries }}"
+
+- name: Setup server backend master entries
+  set_fact:
+    k8s_server_entries: "{{ k8s_server_entries + [ '  server ' + hostvars[item].ansible_hostname + ' ' + hostvars[item]['ansible_default_ipv4']['address'] + ':6443 check' ] }}"
+  with_items: "{{ groups['MASTERS'] }}"
+
+- name: diag
+  debug:
+    msg: "{{ k8s_server_entries[0] }}"
+
+- name: Add dummy entries
+  set_fact:
+    k8s_server_entries: "{{ k8s_server_entries }} + [ ' ' ] + [ ' ' ]"
+  when: (k8s_server_entries|length) == 1
+
+- name: Configure K8S master backends for haproxy
+  become: yes
+  blockinfile:
+    path: /etc/haproxy/haproxy.cfg
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ k8s.cluster_name }} backends"
+    insertafter: "# K8S Master backends"
+    block: |
+      backend {{ k8s.cluster_name }}_servers
+      balance roundrobin
+      {{ k8s_server_entries[0] }}
+      {{ k8s_server_entries[1] }}
+      {{ k8s_server_entries[2] }}
+  when: ansible_host in groups['LB']
+
+- name: (Re)start haproxy
+  become: yes
+  systemd:
+    name: haproxy
+    enabled: true
+    state: restarted
+  when: ansible_host in groups['LB']

@@ -2,10 +2,12 @@
 k8sc330n01
 
 [MASTERS]
-k8sc330n02
-k8sc330n03
+#k8sc330n02
+#k8sc330n03
 
 [WORKERS]
+k8sc330n02
+k8sc330n03
 k8sc330n04
 k8sc330n05
 

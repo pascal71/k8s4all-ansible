@@ -11,6 +11,7 @@ k8s:
   cluster_name: k8sc330
   #control_plane_ep: "10.8.58.84:6443"
   control_plane_ep: "{{groups['LEADER'][0]}}:6443"
+  skip_kube_proxy: false
 
   vg_name_containers: vg_containers
   pvs: /dev/vdb
@@ -36,8 +37,8 @@ CRIO_CLEANUP_LIST:
 - containerd
 
 K8S_PACKAGE_LIST:
-- kubeadm={{ k8s.version }}-00
-- kubelet={{ k8s.version }}-00
-- kubectl={{ k8s.version }}-00
+- kubeadm
+- kubelet
+- kubectl
 
 #- uidmap

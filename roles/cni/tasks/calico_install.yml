@@ -1,0 +1,5 @@
+- name: Install Calico CNI
+  shell: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/{{ k8s.cni_version }}/manifests/tigera-operator.yaml
+
+- name: Configure Calico CNI
+  shell: kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/{{ k8s.cni_version }}/manifests/custom-resources.yaml

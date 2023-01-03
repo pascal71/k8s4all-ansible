@@ -1,0 +1,12 @@
+- name: Open firewall ports on nodes
+  become: yes
+  firewalld:
+    permanent: yes
+    immediate: yes
+    state: enabled
+    port: "{{ item }}"
+  with_items: "{{ firewalld_open_port_list }}"
+
+- name: disable selinux
+  become: yes
+  shell: setenforce 0

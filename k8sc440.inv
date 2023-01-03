@@ -6,6 +6,8 @@ k8sc440n02
 k8sc440n03
 
 [WORKERS]
+#k8sc440n02
+#k8sc440n03
 k8sc440n04
 k8sc440n05
 
@@ -18,6 +20,11 @@ WORKERS
 LEADER
 MASTERS
 WORKERS
+LB
+WS
+
+[LB]
+k8sc440lb01
 
 [WS]
 kvmlpt28

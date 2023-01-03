@@ -1,11 +1,11 @@
 - name: Configure kubeadm-init.conf
   template:
-    src: kubeadm-init.conf.j2
-    dest: kubeadm-init.conf
+    src: kubeadm-init.yaml.j2
+    dest: kubeadm-init.yaml
 
 - name: Initialialize leader
   become: yes
-  shell: kubeadm init --config=kubeadm-init.conf --upload-certs | tee kubeadm-init.out
+  shell: kubeadm init --config=kubeadm-init.yaml --upload-certs | tee kubeadm-init.out
 
 - name: Make .kube directory
   become: yes

@@ -1,0 +1,8 @@
+- name: Get join token from LEADER
+  shell: "kubeadm token create --print-join-command"
+  register: worker_join_token
+  delegate_to: "{{ groups['LEADER'][0] }}"
+
+- name: Have workernodes join the leader
+  become: yes
+  shell: "{{ worker_join_token.stdout }} | tee kubeadm-init.out"

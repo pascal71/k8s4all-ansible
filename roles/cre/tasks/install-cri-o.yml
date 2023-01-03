@@ -43,3 +43,8 @@
     enabled: true
     daemon-reload: true
 
+- name: Configure /etc/containers/policy.json
+  become: yes
+  template:
+    src: policy.json.j2
+    dest: /etc/containers/policy.json

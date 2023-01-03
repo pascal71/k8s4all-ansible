@@ -1,0 +1,7 @@
+- name: Configuring Flannel CNI
+  template:
+    src: kube-flannel.yml.j2
+    dest: kube-flannel.yml
+
+- name: Install Flannel CNI
+  shell: kubectl apply -f kube-flannel.yml

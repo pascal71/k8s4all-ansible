@@ -1,15 +1,40 @@
-- name: Playbook to deploy K8S
+- name: Preparing LB
+  hosts: LB MASTERS LEADER
+  roles:
+  - lb
+
+- name: Preparing NODES
   hosts: NODES
   roles:
     #- ping
   - storage
   - prep_nodes
   - cre
-    #- prep_k8s
+  - prep_k8s
+
+- name: Prepare MASTERS
+  hosts: LEADER MASTERS
+  roles:
+  - prep_masters
 
 - name: Prepare LEADER
   hosts: LEADER
   roles:
+  - k8s_leader
+  - helm
+  - cni
 
-    #- k8s_leader
+- name: Have the other MASTERS join the LEADER
+  hosts: MASTERS
+  roles:
+  - k8s_masters
+  - helm
 
+- name: Have the WORKERS join the MASTERS
+  hosts: WORKERS
+  roles:
+  - k8s_workers
+
+- name: Disable FW
+  hosts: MASTERS LEADER WORKERS
+  - no_fw

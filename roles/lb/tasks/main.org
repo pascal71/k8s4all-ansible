@@ -1,0 +1,43 @@
+- name: Install haproxy
+  become: yes
+  package:
+    name: haproxy
+    state: latest
+  when: ansible_host in groups['lb']
+
+- name: De-install haproxy on previous LB
+  become: yes
+  package:
+    name: haproxy
+    state: absent
+  when: ansible_host not in groups['lb']
+
+- name: Configure selinux
+  become: yes
+  shell:  setsebool -P haproxy_connect_any 1
+  when: ansible_host in groups['lb'] and ansible_selinux is defined and ansible_selinux != False and ansible_selinux.status == 'enabled'
+
+- name: Install UFW
+  become: yes
+  package:
+    name: ufw
+    state: present
+  when: ansible_host in groups['lb']
+
+- name: Open firewall ports on LB
+  become: yes
+  ufw:
+    rule: allow
+    port: "{{ item.split('/')[0] | replace('-',':') }}"
+    proto: "{{ item.split('/')[1] | replace ('-',':') }}"
+    state: enabled
+  with_items: "{{ firewalld_lb_open_port_list }}"
+  when: ansible_host in groups['lb']
+
+- name: Configure haproxy.cfg 
+  become: yes
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+  notify: restart_haproxy
+  when: ansible_host in groups['lb']

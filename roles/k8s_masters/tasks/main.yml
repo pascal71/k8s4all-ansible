@@ -1,0 +1,30 @@
+- name: Get certificate-key from leader
+  shell: grep '\--control-plane' kubeadm-init.out
+  register: master_controlplane_cert
+  delegate_to: "{{ groups['LEADER'][0] }}"
+
+- name: Get join token from LEADER
+  shell: "kubeadm token create --print-join-command"
+  register: master_join_token
+  delegate_to: "{{ groups['LEADER'][0] }}"
+
+- name: Have other master nodes join the leader
+  become: yes
+  shell: "{{ master_join_token.stdout }} {{ master_controlplane_cert.stdout }} | tee kubeadm-init.out"
+
+- name: Make .kube directory
+  become: yes
+  file:
+    path: .kube
+    owner: "{{ lookup('env','USER') }}"
+    state: directory
+    mode: 0700
+
+- name: Copy config from /etc/kubernetes/admin.conf
+  become: yes
+  copy:
+    remote_src: yes
+    src: /etc/kubernetes/admin.conf
+    dest: .kube/config
+    owner: "{{ lookup('env','USER') }}"
+    mode: 0700

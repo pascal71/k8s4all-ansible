@@ -9,8 +9,14 @@ k8s:
   service_subnet: "10.96.0.0/16"
   dns_domain: "cluster.local"
   cluster_name: k8sc440
-  #control_plane_ep: "10.8.58.84:6443"
-  control_plane_ep: "{{groups['LEADER'][0]}}:6443"
+  control_plane_ep: "k8sc440master:6443"
+  #control_plane_ep: "{{groups['LEADER'][0]}}:6443"
+  skip_kube_proxy: false
+  #cni: canal
+  cni: antrea
+  cni_version: v1.10.0
+  #cni_version: v3.24.5
+  #cni_version: 1.12.5
 
   vg_name_containers: vg_containers
   pvs: /dev/vdb
@@ -35,7 +41,7 @@ CRIO_PACKAGE_LIST:
 - slirp4netns
 
 K8S_PACKAGE_LIST:
-- kubeadm={{ k8s.version }}-00
-- kubelet={{ k8s.version }}-00
-- kubectl={{ k8s.version }}-00
+- kubeadm
+- kubelet
+- kubectl
 
