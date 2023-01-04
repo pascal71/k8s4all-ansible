@@ -8,10 +8,10 @@ k8s:
   pod_subnet: "192.168.0.0/16"
   service_subnet: "10.96.0.0/16"
   dns_domain: "cluster.local"
-  cluster_name: k8sc440
-  #control_plane_ep: "k8sc440master:6443"
-  control_plane_ep: "{{groups['LEADER'][0]}}:6443"
-  skip_kube_proxy: false
+  cluster_name: k8sc441
+  control_plane_ep: "k8sc441master:6443"
+  #control_plane_ep: "{{groups['LEADER'][0]}}:6443"
+  skip_kube_proxy: true
   #cni: canal
   #cni: antrea
   #cni_version: v1.10.0

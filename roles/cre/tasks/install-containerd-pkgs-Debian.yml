@@ -1,0 +1,21 @@
+- name: Add key for Containerd repo
+  become: yes
+  shell: mkdir -p /etc/apt/keyrings ; rm -f /etc/apt/keyrings/docker.gpg ;curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+- name: Add Containerd repo
+  become: yes
+  shell: echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+- name: Install CRI-O packages
+  become: yes
+  apt:
+    name: "cri-o"
+    state: absent
+    update_cache: true
+
+- name: Install Containerd packages
+  become: yes
+  apt:
+    name: "{{ CONTAINERD_PACKAGE_LIST }}"
+    state: latest
+    update_cache: true

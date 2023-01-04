@@ -1,22 +1,20 @@
 [LEADER]
-k8sc440n01
+k8sc441n01
 
 [MASTERS]
-#k8sc440n02
-#k8sc440n03
+k8sc441n02
+k8sc441n03
 
 [WORKERS]
-k8sc440n02
-k8sc440n03
-k8sc440n04
-k8sc440n05
+k8sc441n04
+k8sc441n05
 
 [NODES:children]
 LEADER
 MASTERS
 WORKERS
 
-[K8SC440:children]
+[K8SC441:children]
 LEADER
 MASTERS
 WORKERS

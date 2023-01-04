@@ -37,4 +37,5 @@
 
 - name: Disable FW
   hosts: MASTERS LEADER WORKERS
+  roles:
   - no_fw

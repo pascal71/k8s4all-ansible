@@ -1,0 +1,35 @@
+- name: Install Containerd packages
+  include_tasks: "install-containerd-pkgs-{{ ansible_facts['os_family'] }}.yml"
+
+- name: Clean-up /etc/cni/net.d
+  become: yes
+  file:
+    path: /etc/cni/net.d/
+    state: absent
+
+- name: Retrieve registries.conf and save in /etc/containers
+  become: yes
+  get_url:
+    url: https://src.fedoraproject.org/rpms/containers-common/raw/main/f/registries.conf
+    dest: /etc/containers/registries.conf
+    mode: '0440'
+
+- name: Write out /etc/containers/containers.conf
+  become: yes
+  template:
+    src: containers.conf.j2
+    dest: /etc/containers/containers.conf
+
+- name: Enable and start containerd
+  become: yes
+  systemd:
+    name: containerd
+    state: started
+    enabled: true
+    daemon-reload: true
+
+      #- name: Configure /etc/containers/policy.json
+      #become: yes
+      #template:
+      #src: policy.json.j2
+      #dest: /etc/containers/policy.json
