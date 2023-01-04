@@ -7,8 +7,8 @@
   hosts: NODES
   roles:
     #- ping
-  - storage
-  - prep_nodes
+    #- storage
+    #- prep_nodes
   - cre
   - prep_k8s
 

@@ -9,9 +9,15 @@ k8s:
   service_subnet: "10.96.0.0/16"
   dns_domain: "cluster.local"
   cluster_name: k8sc330
-  #control_plane_ep: "10.8.58.84:6443"
+  #control_plane_ep: "k8sc330master:6443"
   control_plane_ep: "{{groups['LEADER'][0]}}:6443"
   skip_kube_proxy: false
+  #cni: canal
+  #cni: antrea
+  #cni_version: v1.10.0
+  #cni_version: v3.24.5
+  cni: cilium
+  cni_version: 1.12.5
 
   vg_name_containers: vg_containers
   pvs: /dev/vdb
@@ -22,8 +28,12 @@ k8s:
   lv_size_kubelet: 5G
   lv_mount_kubelet: /var/lib/kubelet
 
+#cre:
+#  name: cri-o
+#  version: "1.24"
+#
 cre:
-  name: cri-o
+  name: containerd
   version: "1.24"
 
 CRIO_PACKAGE_LIST:
@@ -31,14 +41,15 @@ CRIO_PACKAGE_LIST:
 - containers-common
 - cri-tools
 - podman
+- runc
+- uidmap
 - slirp4netns
 
-CRIO_CLEANUP_LIST:
-- containerd
+CONTAINERD_PACKAGE_LIST:
+- containerd.io
 
 K8S_PACKAGE_LIST:
 - kubeadm
 - kubelet
 - kubectl
 
-#- uidmap

@@ -10,3 +10,10 @@
   dnf:
     name: "{{ item }}-{{ k8s.version }}"
   loop: "{{ K8S_PACKAGE_LIST }}"
+
+- name: Install extra packages for RedHat
+  become: yes
+  dnf:
+    name: "{{ item }}"
+  loop:
+    - git

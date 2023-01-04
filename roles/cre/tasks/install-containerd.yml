@@ -20,11 +20,19 @@
     src: containers.conf.j2
     dest: /etc/containers/containers.conf
 
+- name: Correct /etc/containerd/config.toml
+  become: yes
+  replace:
+    path: /etc/containerd/config.toml
+    regexp: 'disabled_plugins =.*'
+    replace: '#disabled_plugins = ["cri"]'
+    backup: yes
+
 - name: Enable and start containerd
   become: yes
   systemd:
     name: containerd
-    state: started
+    state: restarted
     enabled: true
     daemon-reload: true
 

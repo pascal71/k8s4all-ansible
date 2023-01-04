@@ -1,3 +1,4 @@
 - name: Install Helm v3
   become: yes
   shell: curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+  ignore_errors: true
