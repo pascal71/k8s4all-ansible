@@ -6,9 +6,9 @@
 - name: Preparing NODES
   hosts: NODES
   roles:
-    #- ping
-    #- storage
-    #- prep_nodes
+  - ping
+  - storage
+  - prep_nodes
   - cre
   - prep_k8s
 

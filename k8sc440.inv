@@ -2,12 +2,12 @@
 k8sc440n01
 
 [MASTERS]
-#k8sc440n02
-#k8sc440n03
-
-[WORKERS]
 k8sc440n02
 k8sc440n03
+
+[WORKERS]
+#k8sc440n02
+#k8sc440n03
 k8sc440n04
 k8sc440n05
 
